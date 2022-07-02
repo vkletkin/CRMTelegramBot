@@ -1,6 +1,5 @@
 from aiogram import types
 from config import dp
-from aiogram.dispatcher.filters import Text
 
 @dp.message_handler(content_types=types.ContentTypes.ANY, state="*")
 async def all_other_messages(message: types.Message):

@@ -1,9 +1,10 @@
-from .StateUsers import OrderMessDriver
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters import Text
+from .state import StatesDriver
 from config import dp, db
 from datetime import datetime
-from aiogram.dispatcher.filters import Text
+
 
 actions_for_driver = ["Невыполненные заказы"]
 orders = []
@@ -34,7 +35,7 @@ async def choose_command_Admin(message: types.Message):
         keyboard.add(types.KeyboardButton("Назад в Меню"))
         await message.answer("Все невыполненные заказы (" + str(len(orders)) + "):", reply_markup=keyboard)
         for order in orders:
-             await message.answer(str(order[0]) + "  " + order[4] + "  " + order[6], reply_markup=keyboard)
+            await message.answer(str(order[0]) + "  " + order[4] + "  " + order[6], reply_markup=keyboard)
         await OrderMessAdmin.wait_properties_order.set()
 
 
@@ -87,7 +88,8 @@ async def price(message: types.Message, state: FSMContext):
 @dp.message_handler(content_types=types.ContentTypes.TEXT, state=OrderMessAdmin.wait_driver)
 async def driver(message: types.Message, state: FSMContext):
     name_drivers = [str(x[1]) for x in drivers]  # имена водителей
-    if message.text not in name_drivers and not message.text == "Автоматический выбор":  # сравниваем ответ с именами водителей
+    # сравниваем ответ с именами водителей
+    if message.text not in name_drivers and not message.text == "Автоматический выбор":
         await message.reply("Пожалуйста, выберите используя клавиатуру ниже.")
         return
 
@@ -95,11 +97,13 @@ async def driver(message: types.Message, state: FSMContext):
         # cдесь выбираем если автоматический выбор с функцияй определения водителя
         await state.update_data(driver=message.text)  # сохраняем имя водителя
         index_name_drivers = name_drivers.index(message.text)
-        await state.update_data(driver_id=drivers[index_name_drivers][0])  # сохраняем id водителя
+        # сохраняем id водителя
+        await state.update_data(driver_id=drivers[index_name_drivers][0])
     else:
         await state.update_data(driver=message.text)  # сохраняем имя водителя
         index_name_drivers = name_drivers.index(message.text)
-        await state.update_data(driver_id=drivers[index_name_drivers][0])  # сохраняем id водителя
+        # сохраняем id водителя
+        await state.update_data(driver_id=drivers[index_name_drivers][0])
     drivers.clear()
 
     user_data = await state.get_data()
@@ -109,8 +113,7 @@ async def driver(message: types.Message, state: FSMContext):
     await message.answer(f"Вы заказали машину на адресс: {user_data['address']}\n"
                          f"Номер телефона: {user_data['phone_number']}\n"
                          f"Цена: {user_data['price']}\n"
-                         f"Водитель: {user_data['driver']}\n"
-                         , reply_markup=keyboard)
+                         f"Водитель: {user_data['driver']}\n", reply_markup=keyboard)
     await OrderMessAdmin.wait_ready.set()
 
 
@@ -148,21 +151,22 @@ async def phone_number(message: types.Message, state: FSMContext):
 
 @dp.message_handler(content_types=types.ContentTypes.TEXT, state=OrderMessAdmin.wait_confirm_order)
 async def confirm_order_Admin(message: types.Message, state: FSMContext):
-    id_orders = [str(x[0]) for x in unconfirmed_orders]  # получаем id всех заказов
+    id_orders = [str(x[0])
+                 for x in unconfirmed_orders]  # получаем id всех заказов
     if message.text not in id_orders:
         await message.reply("Пожалуйста, выберите используя клавиатуру ниже.")
         return
 
     await state.update_data(id_order=message.text)
-    index_id_order = id_orders.index(message.text)  # получаем индекс id нашего заказа
+    # получаем индекс id нашего заказа
+    index_id_order = id_orders.index(message.text)
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(types.KeyboardButton("Продолжить подтверждение заказа"))
     keyboard.add(types.KeyboardButton("Отменить заказ"))
     keyboard.add(types.KeyboardButton("Назад"))
     await message.answer(
         "Перезвоните клиенту и уточните все детали, если клиента что-то не устраивает, то отмените заказ:\n" +
-        unconfirmed_orders[index_id_order][1] + " " + unconfirmed_orders[index_id_order][2]
-        , reply_markup=keyboard)
+        unconfirmed_orders[index_id_order][1] + " " + unconfirmed_orders[index_id_order][2], reply_markup=keyboard)
     await OrderMessAdmin.wait_confirm_complite.set()
 
 
@@ -199,7 +203,8 @@ async def confirm_price_Admin(message: types.Message, state: FSMContext):
 async def confirm_driver(message: types.Message, state: FSMContext):
     name_drivers = [str(x[1]) for x in drivers]  # имена водителей
 
-    if message.text not in name_drivers and not message.text == "Автоматический выбор":  # сравниваем ответ с именами водителей
+    # сравниваем ответ с именами водителей
+    if message.text not in name_drivers and not message.text == "Автоматический выбор":
         await message.reply("Пожалуйста, выберите используя клавиатуру ниже.")
         return
 
@@ -207,11 +212,13 @@ async def confirm_driver(message: types.Message, state: FSMContext):
         # cдесь выбираем если автоматический выбор с функцияй определения водителя
         await state.update_data(driver=message.text)  # сохраняем имя водителя
         index_name_drivers = name_drivers.index(message.text)
-        await state.update_data(driver_id=drivers[index_name_drivers][0])  # сохраняем id водителя
+        # сохраняем id водителя
+        await state.update_data(driver_id=drivers[index_name_drivers][0])
     else:
         await state.update_data(driver=message.text)  # сохраняем имя водителя
         index_name_drivers = name_drivers.index(message.text)
-        await state.update_data(driver_id=drivers[index_name_drivers][0])  # сохраняем id водителя
+        # сохраняем id водителя
+        await state.update_data(driver_id=drivers[index_name_drivers][0])
     drivers.clear()
 
     user_data = await state.get_data()
@@ -221,11 +228,5 @@ async def confirm_driver(message: types.Message, state: FSMContext):
     await message.answer(f"Вы подтвердили заказ на адресс: {user_data['address']}\n"
                          f"Номер телефона: {user_data['tel_num']}\n"
                          f"Цена: {user_data['price']}\n"
-                         f"Водитель: {user_data['driver']}.\n"
-                         , reply_markup=keyboard)
+                         f"Водитель: {user_data['driver']}.\n", reply_markup=keyboard)
     await OrderMessAdmin.wait_ready.set()
-
-
-
-
-

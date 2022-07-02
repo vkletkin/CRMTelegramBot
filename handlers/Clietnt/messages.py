@@ -1,9 +1,10 @@
-from .StateUsers import OrderMessClient
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters import Text
+from .state import StatesClient
 from config import dp, db
 from datetime import datetime
-from aiogram.dispatcher.filters import Text
+
 
 actions_for_clietn = ["Заказать откачку ямы", "Скидки и акции", "Связаться с нами", "О нас"]
 
